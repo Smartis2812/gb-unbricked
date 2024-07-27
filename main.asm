@@ -1,5 +1,10 @@
 INCLUDE "hardware.inc"
 
+DEF BRICK_LEFT EQU $05
+DEF BRICK_RIGHT EQU $06
+DEF BLANK_TILE EQU $08
+
+
 SECTION "Header", ROM0[$100]
 
     jp EntryPoint
@@ -125,6 +130,7 @@ BounceOnTop:
     ld a, [hl]
     call IsWallTile
     jp nz, BounceOnRight
+	call CheckAndHandleBrick
     ld a, 1
     ld [wBallMomentumY], a
 
@@ -139,6 +145,7 @@ BounceOnRight:
     ld a, [hl]
     call IsWallTile
     jp nz, BounceOnLeft
+	call CheckAndHandleBrick
     ld a, -1
     ld [wBallMomentumX], a
 
@@ -153,6 +160,7 @@ BounceOnLeft:
     ld a, [hl]
     call IsWallTile
     jp nz, BounceOnBottom
+	call CheckAndHandleBrick
     ld a, 1
     ld [wBallMomentumX], a
 
@@ -167,6 +175,7 @@ BounceOnBottom:
     ld a, [hl]
     call IsWallTile
     jp nz, BounceDone
+	call CheckAndHandleBrick
     ld a, -1
     ld [wBallMomentumY], a
 BounceDone:
@@ -282,6 +291,26 @@ UpdateKeys:
   or a, $F0 ; A7-4 = 1; A3-0 = unpressed keys
 .knownret
   ret
+
+
+; Checks if a brick was collided with and breaks it if possible.
+; @param hl: address of tile.
+CheckAndHandleBrick:
+    ld a, [hl]
+    cp a, BRICK_LEFT
+    jr nz, CheckAndHandleBrickRight
+    ; Break a brick from the left side.
+    ld [hl], BLANK_TILE
+    inc hl
+    ld [hl], BLANK_TILE
+CheckAndHandleBrickRight:
+    cp a, BRICK_RIGHT
+    ret nz
+    ; Break a brick from the right side.
+    ld [hl], BLANK_TILE
+    dec hl
+    ld [hl], BLANK_TILE
+    ret
 
 
 
