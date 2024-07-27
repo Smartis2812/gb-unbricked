@@ -17,44 +17,24 @@ WaitVBlank:
     ld a, 0
     ld [rLCDC], a
 
-    ; Copy the tile data
+	; Copy the tile data
     ld de, Tiles
-    ld hl, $9000 ; $9000 is where the data of background tiles start
+    ld hl, $9000
     ld bc, TilesEnd - Tiles
-CopyTiles:
-    ld a, [de]
-    ld [hli], a
-    inc de
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, CopyTiles
+    call Memcopy
 
-    ; Copy the tilemap
+	; Copy the tilemap
     ld de, Tilemap
     ld hl, $9800
     ld bc, TilemapEnd - Tilemap
-CopyTilemap:
-    ld a, [de]
-    ld [hli], a
-    inc de
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, CopyTilemap
+    call Memcopy
 
-  ; Copy the tile data
+    ; Copy the tile data
     ld de, Paddle
     ld hl, $8000
     ld bc, PaddleEnd - Paddle
-CopyPaddle:
-    ld a, [de]
-    ld [hli], a
-    inc de
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, CopyPaddle
+    call Memcopy
+
 
     ld a, 0
     ld b, 160
@@ -103,6 +83,23 @@ WaitVBlank2:
     ld [_OAMRAM + 1], a
     jp Main
    
+
+; Copy bytes from one area to another.
+; @param de: Source
+; @param hl: Destination
+; @param bc: Length
+Memcopy:
+    ld a, [de]
+    ld [hli], a
+    inc de
+    dec bc
+    ld a, b
+    or a, c
+    jp nz, Memcopy
+    ret
+
+
+
 ; Section for tiles to load into VRAM
 Tiles:
 	dw `33333333
